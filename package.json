@@ -1,0 +1,13 @@
+{
+  "name": "wechat-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:bramblex/wechat-api.git",
+  "author": "brambles <qjnight@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.16.1",
+    "node-axios-cookiejar": "^0.0.3",
+    "tough-cookie": "^2.3.2"
+  }
+}

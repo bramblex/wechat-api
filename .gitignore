@@ -1,0 +1,5 @@
+# 忽略 node 库
+node_modules/
+
+# 忽略 data 目录
+data/
