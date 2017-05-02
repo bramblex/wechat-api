@@ -7,7 +7,11 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.16.1",
+    "co": "^4.6.0",
+    "lodash": "^4.17.4",
     "node-axios-cookiejar": "^0.0.3",
-    "tough-cookie": "^2.3.2"
+    "qrcode-terminal": "^0.11.0",
+    "tough-cookie": "^2.3.2",
+    "xml2js": "^0.4.17"
   }
 }

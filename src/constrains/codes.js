@@ -1,56 +1,5 @@
 
-const LANG = 'zh_CN'
-
-const HOST = {
-    BASE: 'wx2.qq.com',
-    WECHAT: 'weixin.qq.com',
-    FILE: 'file.wx.qq.com',
-    PUSH: [
-        'webpush.weixin.qq.com',
-        'webpush.wx2.qq.com',
-        'webpush.wx8.qq.com',
-        'webpush.weixin.qq.com',
-        'webpush.web2.wechat.com',
-        'webpush.web.wechat.com',
-    ],
-}
-
-const QRCODE_PATH = 'https://login.weixin.qq.com/qrcode/'
-
-const GET_API = (BASE = HOST.BASE, WECHAT = HOST.WECHAT, FILE = HOST.FILE, PUSH = HOST.PUSH[0]) => ({
-    JSlOGIN: 'https://login.' + WECHAT + '/jslogin',
-    LOGIN: 'https://login.' + WECHAT + '/cgi-bin/mmwebwx-bin/login',
-    SYNCCHECK: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/synccheck',
-    WEBWXDOWNLOADMEDIA: 'https://' + FILE + '/cgi-bin/mmwebwx-bin/webwxgetmedia',
-    WEBWXUPLOADMEDIA: 'https://' + FILE + '/cgi-bin/mmwebwx-bin/webwxuploadmedia',
-    WEBWXPREVIEW: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxpreview',
-    WEBWXINIT: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxinit',
-    WEBWXGETCONTACT: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetcontact',
-    WEBWXSYNC: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsync',
-    WEBWXBATCHGETCONTACT: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxbatchgetcontact',
-    WEBWXGETICON: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgeticon',
-    WEBWXSENDMSG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsendmsg',
-    WEBWXSENDMSGIMG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsendmsgimg',
-    WEBWXSENDEMOTICON: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsendemoticon',
-    WEBWXSENDAPPMSG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsendappmsg',
-    WEBWXGETHEADIMG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetheadimg',
-    WEBWXGETMSGIMG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetmsgimg',
-    WEBWXGETMEDIA: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetmedia',
-    WEBWXGETVIDEO: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetvideo',
-    WEBWXLOGOUT: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxlogout',
-    WEBWXGETVOICE: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxgetvoice',
-    WEBWXUPDATECHATROOM: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxupdatechatroom',
-    WEBWXCREATECHATROOM: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxcreatechatroom',
-    WEBWXSTATUSNOTIFY: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxstatusnotify',
-    WEBWXCHECKURL: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxcheckurl',
-    WEBWXVERIFYUSER: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxverifyuser',
-    WEBWXFEEDBACK: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsendfeedback',
-    WEBWXREPORT: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxstatreport',
-    WEBWXSEARCH: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxsearchcontact',
-    WEBWXOPLOG: 'https://' + BASE + '/cgi-bin/mmwebwx-bin/webwxoplog'
-})
-
-const CODES = {
+module.exports = {
   OPLOG_CMD_ID: {
     TOPCONTACT: 3,
     MODREMARKNAME: 2,
@@ -194,20 +143,4 @@ const CODES = {
   MM_SEND_FILE_STATUS_FAIL: 3,
   MM_SEND_FILE_STATUS_CANCEL: 4,
   MM_EMOTICON_WEB: '_web',
-}
-
-const SP_ACCOUNTS = 'newsapp,fmessage,filehelper,weibo,qqmail,fmessage,' +
-  'tmessage,qmessage,qqsync,floatbottle,lbsapp,shakeapp,medianote,qqfriend,' +
-  'readerapp,blogapp,facebookapp,masssendapp,meishiapp,feedsapp,voip,' +
-  'blogappweixin,weixin,brandsessionholder,weixinreminder,wxid_novlwrv3lqwv11,' +
-  'gh_22b87fa7cb3c,officialaccounts,notification_messages,wxid_novlwrv3lqwv11,' +
-  'gh_22b87fa7cb3c,wxitil,userexperience_alarm,notification_messages'
-
-module.exports = { 
-    LANG, 
-    HOST, 
-    QRCODE_PATH,
-    GET_API, 
-    CODES,
-    SP_ACCOUNTS
 }
