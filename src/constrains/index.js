@@ -18,6 +18,6 @@ module.exports = {
   APPID,
   SP_ACCOUNTS,
   HOST: require('./host'),
-  API_TEMPLATE: require('./api_template'),
+  API_TEMPLATE: require('./api'),
   CODES: require('./codes')
 }
