@@ -8,17 +8,17 @@ const ROBOT_API_URL = 'http://www.tuling123.com/openapi/api'
 const API_KEY = 'd145eb04c3054ef899bd4e007a2029ab'
 
 async function tell_robot (userid, send_text) {
-  const {data: {code, text, list}} = await axios.post(ROBOT_API_URL, {
+  const {data: {code, url, text, list}} = await axios.post(ROBOT_API_URL, {
     key: API_KEY,
     info: send_text,
     userid: userid.replace('@', '').replace('_', '')
   })
   if (!list) {
-    return text
+    return (url ? [text, url] : [text]).join('\n')
   } else {
-    return [text].concat(list.map(item => 
-      Object.keys(item).map(key => `[${key}]: ${item[key]}`).join('<br/>')
-    )).join('<br/>===================<br/>')
+    return (url ? [text, url] : [text]).concat(list.slice(0, 5).map(item => 
+      Object.keys(item).map(key => `[${key}]: ${item[key]}`).join('\n')
+    )).join('\n===================\n')
   }
 }
 
