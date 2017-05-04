@@ -12,6 +12,12 @@
         },
         {
             "type": "node",
+            "request": "launch",
+            "name": "调试机器人",
+            "program": "${workspaceRoot}/test/tuling-robot.js"
+        },
+        {
+            "type": "node",
             "request": "attach",
             "name": "附加到端口",
             "address": "localhost",

@@ -180,7 +180,7 @@ class WeChatAPI extends EventEmitter {
 
     this._debug_('qrcoe_img: ' + qrcode_img)
     this._debug_('qrcode_content: ' + qrcode_content)
-    this._debug_(qrcode)
+    this._debug_('\n' + qrcode)
 
     this.emit('qrcode', {url: qrcode_img, qrcode})
   }
