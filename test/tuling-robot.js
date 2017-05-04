@@ -30,13 +30,13 @@ wechat_api.on('log', ({type, data}) => {
 
 wechat_api.on('message', msg => {
   async function __handleMsg__ () {
-    const text = await tell_robot(msg.FromUserName, msg.Content.replace(wechat_api.user.UserName, ''))
+    const text = await tell_robot(msg.FromUserName, msg.Content.replace(/@+[a-zA-Z0-9_]+:<br\/>/, ''))
     await wechat_api.webwxsendmsg(text, msg.FromUserName)
   }
 
   if (msg.MsgType === 1) {
     if (msg.FromUserName.includes('@@')) {
-      if (msg.Content.includes(wechat_api.user.UserName)) {
+      if (msg.Content.includes('@' + wechat_api.user.NickName)) {
         __handleMsg__()
       }
     } else {
