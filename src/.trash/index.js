@@ -13,11 +13,19 @@ const SP_ACCOUNTS = 'newsapp,fmessage,filehelper,weibo,qqmail,fmessage,' +
 
 const APPID = 'wx782c26e4c19acffb'
 
+const SYNC_HOST_LIST = [
+  'webpush.wx2.qq.com',
+  'webpush.wx8.qq.com',
+  'webpush.weixin.qq.com',
+  'webpush.web2.wechat.com',
+  'webpush.web.wechat.com',
+]
+
 module.exports = {
   LANG,
   APPID,
   SP_ACCOUNTS,
-  HOST: require('./host'),
-  API_TEMPLATE: require('./api'),
+  SYNC_HOST_LIST,
+  API: require('./api'),
   CODES: require('./codes')
 }
