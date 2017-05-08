@@ -73,7 +73,7 @@ class WeChatAPI extends EventEmitter {
       this._debug_(`尝试从文件恢复: ${this.tickets_path}`)
       const config = await utils.readJsonFile(this.tickets_path)
       const last_sync = await utils.readJsonFile(this.last_sync_path)
-      if ((Date.now() - last_sync) / 1000 > 60) {
+      if ((utils.now() - last_sync) / 1000 > 60) {
         this._debug_('初始化信息已过期, 跳过')
       } else {
         for (let key in config) {
@@ -401,7 +401,7 @@ class WeChatAPI extends EventEmitter {
         _: utils.now()
       }
     )
-    await utils.writeJsonFile(this.last_sync_path, Date.now())
+    await utils.writeJsonFile(this.last_sync_path, utils.now())
     const result = utils.parseJsData(data)
     this._debug_('同步检查结果: ' + JSON.stringify(result['window.synccheck']))
     return {
@@ -429,7 +429,7 @@ class WeChatAPI extends EventEmitter {
 
   async webwxsendmsg (text, to='filehelper') {
     this._debug_(`发送消息 ${JSON.stringify(text)} 给 ${to}`)
-    const clientMsgId = (+new Date + Math.random().toFixed(3)).replace('.', '')
+    const clientMsgId = utils.now() + Math.floor(Math.random() * 1e4)
     const result = await this._post_(
       this.api.webwxsendmsg,
       {pass_ticket: this.pass_ticket},
@@ -442,7 +442,8 @@ class WeChatAPI extends EventEmitter {
           ToUserName: to,
           LocalID: clientMsgId,
           ClientMsgId: clientMsgId,
-        }
+        },
+        Scene: 0
       }
     )
     if (result.BaseResponse.Ret !== 0) {

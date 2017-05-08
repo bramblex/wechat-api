@@ -52,7 +52,14 @@ class WeChat extends EventEmitter {
     const api = this.api
     await api.init()
 
-    if (!api.pass_ticket) {
+    let user
+    try {
+      if (!api.pass_ticket) {
+        throw new Error()
+      } else {
+        user = await api.webwxinit()
+      }
+    } catch (e) {
       await api.getUUID()
 
       const qrcode = await api.genQrcode()
@@ -60,9 +67,9 @@ class WeChat extends EventEmitter {
 
       await api.waitForLogin()
       await api.login()
+      user = await api.webwxinit()
     }
 
-    const user = await api.webwxinit()
     await api.webwxstatusnotify()
 
     while (!this.stop_singal) {

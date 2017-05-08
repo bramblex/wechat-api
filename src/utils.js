@@ -5,7 +5,7 @@ const xml2js = require('xml2js')
 const url = require('url')
 const fs = require('mz/fs')
 
-const now = () => +new Date()
+const now = () => Date.now()
 const sleep = t => new Promise(resolve => setTimeout(resolve, t * 1e3))
 const makeQrcode = uri => new Promise(resolve => qrcode.generate(uri, {small: true}, resolve))
 const parseXml = text => new Promise((resolve, reject) => xml2js.parseString(text, (err, result) => err ? reject(err) : resolve(result)))
