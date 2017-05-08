@@ -8,10 +8,13 @@
   "dependencies": {
     "axios": "^0.16.1",
     "json5": "^0.5.1",
+    "mkdirp": "^0.5.1",
+    "mz": "^2.6.0",
     "node-axios-cookiejar": "^0.0.3",
     "qrcode-terminal": "^0.11.0",
     "sprintf-js": "^1.0.3",
     "tough-cookie": "^2.3.2",
+    "tough-cookie-filestore": "^0.0.1",
     "xml2js": "^0.4.17"
   },
   "devDependencies": {

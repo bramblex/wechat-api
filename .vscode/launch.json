@@ -13,6 +13,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "playground测试",
+            "program": "${workspaceRoot}/test/test.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "调试机器人",
             "program": "${workspaceRoot}/test/tuling-robot.js"
         },

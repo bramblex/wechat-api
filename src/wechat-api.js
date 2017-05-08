@@ -1,58 +1,33 @@
 
 'use strict'
 
-  /* 
-     @TODO:
-
-     webwxgetmsgimg
-     webwxgetvoice
-     webwxgetvideo
-     webwxgeticon
-     webwxgetheadimg
-
-     webwxuploadmedia
-     webwxsendmsgimg
-     webwxsendemoticon
-     webwxsendappmsg
-     webwxcreatechatroom
-     webwxupdatechatroom
-     webwxrevokemsg
-     webwxpushloginurl
-     association_login
-
-     send_text
-     send_img
-     send_emot
-     send_file
-     revoke_msg
-
-     get_user_by_id
-     get_group_user_by_id
-     get_group_by_id
-     get_user_id
-  */
-
 const http = require('http')
 const https = require('https')
 const axios = require('axios')
 const tough = require('tough-cookie')
+const fs = require('mz/fs')
+const path = require('path')
+const mkdirp = require('mkdirp')
 const EventEmitter = require('events')
 const axiosCookieJarSupport = require('node-axios-cookiejar')
+const FileCookieStore = require('tough-cookie-filestore')
 const vsprintf = require('sprintf-js').vsprintf
 
 const { CODES, API, HOST, LANG, APPID, SPECIAL_ACCOUNTS, BASE_HOST} = require('./constrains')
 const utils = require('./utils')
 
 class WeChatAPI extends EventEmitter {
-  constructor (wx_host = BASE_HOST) {
+  constructor (prefix = '/tmp/wechat') {
     super()
-
-    // 停止信号
-    this.stop_singal = false
-    this.stop_callback = null
 
     // 设备号
     this.device_id = utils.makeDeviceID()
+
+    // 存储信息
+    this.prefix = prefix
+    this.cookie_path = path.join(prefix, 'cookie.json')
+    this.tickets_path = path.join(prefix, 'tickets.json')
+    this.last_sync_path = path.join(prefix, 'last_sync.json')
 
     // 登录信息
     this.uuid = null
@@ -66,10 +41,10 @@ class WeChatAPI extends EventEmitter {
     this.synckey = null
 
     // 用户信息
-    this.user = null
+    // this.user = null
 
     // 联系人
-    this.contacts = null
+    // this.contacts = null
 
     // hosts
     this.wx_host = null
@@ -77,16 +52,45 @@ class WeChatAPI extends EventEmitter {
     this.file_host = null
     this.sync_host = null
     this.API = null
-    this._setWxHost_(wx_host)
 
     // requests
     this.request = null
-    this._initRequest_()
   }
 
-  _setWxHost_ (wx_host) {
-    // const [login_host, file_host, sync_host] = HOST[wx_host] || HOST['*']
+  async init() {
+    this._debug_('初始化微信')
 
+    try {
+      await fs.access(this.prefix, fs.constants.R_OK | fs.constants.W_OK | fs.constants.X_OK)
+    } catch (e) {
+      await new Promise((resolve, reject) =>
+        mkdirp(this.prefix, err => err ? reject(err) : resolve())
+      )
+      // this._throw_(new Error(`路径 ${this.prefix} 不能存在或不能读写`))
+    }
+
+    try {
+      this._debug_(`尝试从文件恢复: ${this.tickets_path}`)
+      const config = await utils.readJsonFile(this.tickets_path)
+      const last_sync = await utils.readJsonFile(this.last_sync_path)
+      if ((Date.now() - last_sync) / 1000 > 60) {
+        this._debug_('初始化信息已过期, 跳过')
+      } else {
+        for (let key in config) {
+          this[key] = config[key]
+        }
+        this._debug_('恢复成功')
+      }
+    } catch (e) {
+      this._debug_('未恢复成功，跳过')
+    }
+
+    this._initWxHost_(this.wx_host || BASE_HOST)
+    await utils.touch(this.cookie_path)
+    this._initRequest_(this.cookie_path)
+  }
+
+  _initWxHost_ (wx_host) {
     const [login_host, file_host, sync_host] = 
       HOST[Object.keys(HOST).find(tail => wx_host.includes(tail)) || '*']
 
@@ -96,8 +100,8 @@ class WeChatAPI extends EventEmitter {
     this.api = API(wx_host, login_host, file_host, sync_host)
   }
 
-  _initRequest_ () {
-    const jar = new tough.CookieJar()
+  _initRequest_ (cooie_path) {
+    const jar = new tough.CookieJar(new FileCookieStore(cooie_path))
     const request = axios.create({
       timeout: 35e3,
       headers: {
@@ -129,17 +133,28 @@ class WeChatAPI extends EventEmitter {
     this._log_('debug', data)
   }
 
-  async _get_ (url, params = {}) {
+  async _get_(url, params = {}, retry = 3) {
     const { data } = await this.request.get(url, { params })
     this._log_('api', ['GET', url, params, data])
     return data
   }
 
-  async _post_ (url, params = {}, body = {}) {
+  async _post_(url, params = {}, body = {}, retry = 3) {
     const { data } = await this.request.post(url, body, { params })
     this._log_('api', ['POST', url, params, body, data])
     return data
   }
+
+  // @TODO:
+  // async _download_ (url, params = {}, path, retry = 3) {
+  //   try {
+  //   } catch (error) {
+  //   }
+  // }
+
+  // @TODO:
+  // async _upload_ (url, params = {}) {
+  // }
 
   _baseRequest_ () {
     return {
@@ -148,6 +163,10 @@ class WeChatAPI extends EventEmitter {
       Skey: this.skey,
       DeviceID: this.device_id
     }
+  }
+
+  _checkBaseResponse_ (result) {
+    return !(!result || !result.BaseResponse || result.BaseResponse.Ret !== 0)
   }
 
   _synckey_ () {
@@ -182,7 +201,8 @@ class WeChatAPI extends EventEmitter {
     this._debug_('qrcode_content: ' + qrcode_content)
     this._debug_('\n' + qrcode)
 
-    this.emit('qrcode', {url: qrcode_img, qrcode})
+    // this.emit('qrcode', {url: qrcode_img, qrcode})
+    return {url: qrcode_img, qrcode}
   }
 
   async waitForLogin(tip = 1) {
@@ -204,7 +224,7 @@ class WeChatAPI extends EventEmitter {
         await utils.sleep(3)
       } else if (code === 200) {
         this.redirect_uri = result['window.redirect_uri'] + '&fun=new'
-        this._setWxHost_(utils.getHost(this.redirect_uri))
+        this._initWxHost_(utils.getHost(this.redirect_uri))
         this._debug_('已点击登录，登录 url :' + this.redirect_uri)
         break;
       } else if (code === 408) {
@@ -228,6 +248,16 @@ class WeChatAPI extends EventEmitter {
     this.sid = error.wxsid[0]
     this.uin = error.wxuin[0]
     this.pass_ticket = error.pass_ticket[0]
+
+
+    this._debug_('写入登录信息')
+    await utils.writeJsonFile(this.tickets_path, {
+      wx_host: this.wx_host,
+      skey: this.skey,
+      sid: this.sid,
+      uin: this.uin,
+      pass_ticket: this.pass_ticket
+    })
 
     this._debug_(`登录成功
       skey: ${this.skey}
@@ -253,12 +283,13 @@ class WeChatAPI extends EventEmitter {
     this.user = result.User
 
     this.synckey = result.SyncKey
-
     this._debug_(`初始化成功
       user: ${this.user},
       synckey: ${this.sync_key},
       synckey_fromted: ${this._synckey_()}
     `)
+
+    return this.user
   }
 
   async webwxstatusnotify () {
@@ -312,7 +343,6 @@ class WeChatAPI extends EventEmitter {
       }
     }
 
-    this.contacts = contacts
     this._debug_(`通讯录获取成功
       全部成员数: ${result.MemberList.length}
       公众号账号数: ${this.contacts.publics.length}
@@ -320,6 +350,7 @@ class WeChatAPI extends EventEmitter {
       通讯录好友数： ${this.contacts.friends.length}
       保存的群数: ${this.contacts.groups.length}
     `)
+    return contacts
   }
 
   async webwxbatchgetcontact(id_list) {
@@ -370,7 +401,7 @@ class WeChatAPI extends EventEmitter {
         _: utils.now()
       }
     )
-
+    await utils.writeJsonFile(this.last_sync_path, Date.now())
     const result = utils.parseJsData(data)
     this._debug_('同步检查结果: ' + JSON.stringify(result['window.synccheck']))
     return {
@@ -419,55 +450,99 @@ class WeChatAPI extends EventEmitter {
     }
   }
 
-  async start () {
-    this.stop_singal = false
-    // this.stop_promise = new Promise
+  // async storeTo (path) {
+  //   await fs.writeFile(path, JSON.stringify(this))
+  // }
 
-    await this.getUUID()
-    await this.genQrcode()
-    await this.waitForLogin()
-    await this.login()
-    await this.webwxinit()
-    await this.webwxstatusnotify()
-    // await this.webwxgetcontact()
-    await this.webwxsendmsg('我登录啦')
+  // async recoveryFrom (path) {
+  //   const data = await fs.readFile(path)
+  //   const obj = JSON.stringify(data)
+  //   for (let k in obj) {
+  //     this[k] = obj[k]
+  //   }
+  // }
 
-    while (!this.stop_singal) {
-      const result = await this.synccheck()
 
-      if (result.retcode !== 0) {
-        if (result.retcode === 1100) {
-          this._throw_(new Error('已登出'))
-        } else if (result.retcode === 1101) {
-          this._throw_(new Error('在其他地方登录'))
-        } else {
-          this._throw_(new Error('未知错误: '+result.retcode))
-        }
-      } 
+  // async start () {
+    // this.stop_singal = false
+    // // this.stop_promise = new Promise
 
-      if (result.selector === 2) {
-        const result = await this.webwxsync()
-        this._debug_(`收到消息: ${result.AddMsgList}`)
-        for (let msg of result.AddMsgList) {
-          if (msg.FromUserName === this.user.UserName) {
-            this.emit('command', msg)
-          } else {
-            this.emit('message', msg)
-          }
-        }
-      }
+    // await this.getUUID()
+    // await this.genQrcode()
+    // await this.waitForLogin()
+    // await this.login()
+    // await this.webwxinit()
+    // await this.webwxstatusnotify()
+    // // await this.webwxgetcontact()
+    // await this.webwxsendmsg('我登录啦')
 
-      await utils.sleep(3)
-    }
-    this.stop_callback()
-  }
+    // while (!this.stop_singal) {
+    //   const result = await this.synccheck()
 
-  async stop () {
-    this.stop_singal = true
-    await new Promise(resolve => {
-      this.stop_callback = resolve
-    })
-  }
+    //   if (result.retcode !== 0) {
+    //     if (result.retcode === 1100) {
+    //       this._throw_(new Error('已登出'))
+    //     } else if (result.retcode === 1101) {
+    //       this._throw_(new Error('在其他地方登录'))
+    //     } else {
+    //       this._throw_(new Error('未知错误: '+result.retcode))
+    //     }
+    //   } 
+
+    //   if (result.selector === 2) {
+    //     const result = await this.webwxsync()
+    //     this._debug_(`收到消息: ${result.AddMsgList}`)
+    //     for (let msg of result.AddMsgList) {
+    //       if (msg.FromUserName === this.user.UserName) {
+    //         this.emit('command', msg)
+    //       } else {
+    //         this.emit('message', msg)
+    //       }
+    //     }
+    //   }
+
+    //   await utils.sleep(3)
+    // }
+    // this.stop_callback()
+  // }
+
+  // async stop () {
+    // this.stop_singal = true
+    // await new Promise(resolve => {
+    //   this.stop_callback = resolve
+    // })
+  // }
+  
+  /* 
+     @TODO:
+
+     webwxgetmsgimg
+     webwxgetvoice
+     webwxgetvideo
+     webwxgeticon
+     webwxgetheadimg
+
+     webwxuploadmedia
+     webwxsendmsgimg
+     webwxsendemoticon
+     webwxsendappmsg
+     webwxcreatechatroom
+     webwxupdatechatroom
+     webwxrevokemsg
+     webwxpushloginurl
+     association_login
+
+     send_text
+     send_img
+     send_emot
+     send_file
+     revoke_msg
+
+     get_user_by_id
+     get_group_user_by_id
+     get_group_by_id
+     get_user_id
+  */
 
 }
 
