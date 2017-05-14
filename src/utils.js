@@ -15,7 +15,16 @@ const readJsonFile = async path => json5.parse(await fs.readFile(path, 'utf-8'))
 const writeJsonFile = (path, data) => fs.writeFile(path, json5.stringify(data), 'utf-8')
 const merge = (...object) => Object.assign({}, ...object)
 const touch = path => fs.appendFile(path, '')
+const createMsgID = () => now() + Math.floor(Math.random() * 1e4)
 
+const isExist = async path => {
+  try {
+    await fs.access(path, fs.constants.F_OK)
+    return true
+  } catch (err) {
+    return false
+  }
+}
 
 const parseJsData = data => {
   const result = {}
@@ -31,5 +40,5 @@ const parseJsData = data => {
 
 module.exports = {
   now, sleep, makeQrcode, parseXml, parseJsData, getHost, makeDeviceID,
-  readJsonFile, writeJsonFile, merge, touch
+  readJsonFile, writeJsonFile, merge, touch, createMsgID, isExist 
 }

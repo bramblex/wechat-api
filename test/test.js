@@ -1,7 +1,101 @@
 
-const {touch} = require('../src/utils')
+// class A {
+//   async constructor () {
+//     await (new Promise(resolve => setTimeout(resolve, 3000)))
+//     console.log('aaa')
+//   }
+// }
 
-touch('/tmp/alalalal')
+// const main = async () => {
+//   const a = await (new A())
+//   console.log('bbb')
+// }
+
+// main()
+
+// const a = {}
+
+const staticObjct = obj => {
+  const static_object = {}
+  for (let proto in obj) {
+    const value = obj[proto]
+    Object.defineProperty(static_object, proto, {
+      get: () => value,
+      set: () => {throw new Error('Static Obj')}
+    })
+  }
+  return static_object
+}
+
+const o = staticObjct({
+  aaa: 'bbb',
+  ccc: 'ddd',
+  eee: 'fff'
+})
+
+console.log(o)
+
+
+// const WeChatAPI = require('../src/wechat-api')
+// const api = new WeChatAPI()
+// const utils = require('../src/utils')
+// const fs = require('fs')
+
+// api.on('log', ({type, data}) => {
+//   console.log(`[${type}]`, data)
+// })
+
+// const main = async () => {
+//   // await api.init()
+//   // const response = await api.request.get('https://baidu.com')
+//   // await api.getUUID()
+
+//   await api.init()
+
+//   let user
+//   try {
+//     if (!api.pass_ticket) {
+//       throw new Error()
+//     } else {
+//       user = await api.webwxinit()
+//     }
+//   } catch (e) {
+//     await api.getUUID()
+
+//     const qrcode = await api.genQrcode()
+
+//     await api.waitForLogin()
+//     await api.login()
+//     user = await api.webwxinit()
+
+
+//     const clientMsgId = utils.now() + Math.floor(Math.random() * 1e4)
+//     const result = await api._post_(api.API.webwxsendmsgimg,
+//       { fun: 'async', f: 'json', pass_ticket: api.pass_ticket },
+//       {
+//         "BaseRequest": api._baseRequest_(),
+//         "Msg": {
+//           "Type": 3,
+//           "MediaId": data.MediaId,
+//           "FromUserName": api.user.UserName,
+//           "ToUserName": 'filehelper',
+//           "LocalID": clientMsgId,
+//           "ClientMsgId":  clientMsgId
+//         }
+//       }
+//     )
+//     console.log(data)
+//     console.log(result)
+//     void(0)
+//   }
+
+//   await api.webwxstatusnotify()
+// }
+
+// main()
+
+// const {touch} = require('../src/utils')
+// touch('/tmp/alalalal')
 
 
 // class BaseClass {

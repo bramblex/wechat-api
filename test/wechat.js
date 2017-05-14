@@ -1,12 +1,8 @@
 
-const WeChat = require('../src/wechat')
+const Wechat = require('../src/wechat')
 const utils = require('../src/utils')
 
-const wechat = new WeChat()
-
-wechat.api.on('log', ({type, data}) => {
-  console.log(`[${type}]`, data)
-})
+const wechat = new Wechat()
 
 wechat
   .use(async ({msg, api, user}, next) => {
@@ -18,7 +14,8 @@ wechat
       )
     }
   })
-  .start()
+  console.log(wechat)
+  // .start()
 
 // wechat
 //   .use(async ({msg, next, api}) => {

@@ -9,45 +9,6 @@ const HOST = {
   '*': ['login.weixin.qq.com', 'file.wx.qq.com', 'webpush.weixin.qq.com']
 }
 
-const API = (wx_host, login_host, file_host, sync_host) => ({
-  qrcode: "https://login.weixin.qq.com/l/",
-  qrcode_img: "https://login.weixin.qq.com/qrcode/",
-  jslogin: "https://" + login_host + "/jslogin",
-  login: "https://" + login_host + "/cgi-bin/mmwebwx-bin/login",
-  synccheck: "https://" + sync_host + "/cgi-bin/mmwebwx-bin/synccheck",
-  webwxdownloadmedia: "https://" + file_host + "/cgi-bin/mmwebwx-bin/webwxgetmedia",
-  webwxuploadmedia: "https://" + file_host + "/cgi-bin/mmwebwx-bin/webwxuploadmedia",
-  webwxpreview: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxpreview",
-  webwxinit: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxinit",
-  webwxgetcontact: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetcontact",
-  webwxsync: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsync",
-  webwxbatchgetcontact: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxbatchgetcontact",
-  webwxgeticon: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgeticon",
-  webwxsendmsg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendmsg",
-  webwxsendmsgimg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendmsgimg",
-  webwxsendmsgvedio: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendvideomsg",
-  webwxsendemoticon: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendemoticon",
-  webwxsendappmsg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendappmsg",
-  webwxgetheadimg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetheadimg",
-  webwxgetmsgimg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetmsgimg",
-  webwxgetmedia: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetmedia",
-  webwxgetvideo: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetvideo",
-  webwxlogout: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxlogout",
-  webwxgetvoice: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxgetvoice",
-  webwxupdatechatroom: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxupdatechatroom",
-  webwxcreatechatroom: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxcreatechatroom",
-  webwxstatusnotify: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxstatusnotify",
-  webwxcheckurl: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxcheckurl",
-  webwxverifyuser: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxverifyuser",
-  webwxfeedback: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsendfeedback",
-  webwxreport: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxstatreport",
-  webwxsearch: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxsearchcontact",
-  webwxoplog: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxoplog",
-  checkupload: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxcheckupload",
-  webwxrevokemsg: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxrevokemsg",
-  webwxpushloginurl: "https://" + wx_host + "/cgi-bin/mmwebwx-bin/webwxpushloginurl",
-})
-
 const CODES = {
   'CONTACTFLAG_CONTACT': 1,
   'CONTACTFLAG_CHATCONTACT': 2,
@@ -119,4 +80,4 @@ const APPID = 'wx782c26e4c19acffb'
 
 const BASE_HOST = 'wx.qq.com'
 
-module.exports = { CODES, API, HOST, LANG, APPID, SPECIAL_ACCOUNTS , BASE_HOST}
+module.exports = { CODES, HOST, LANG, APPID, SPECIAL_ACCOUNTS, BASE_HOST }

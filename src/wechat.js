@@ -1,116 +1,109 @@
 'use strict'
 
-const EventEmitter = require('events')
-const WeChatApi = require('./wechat-api')
-const utils = require('./utils')
+const Middleware = require('./wechat-middleware')
+const WechatAPI = require('./wechat-api')
 
-class WeChat extends EventEmitter {
-
-  static compose(middlewares) {
-    return [...middlewares, ctx => ctx].reduce((left, right) =>
-      (ctx, next) => left(ctx, () => right(ctx, next)))
-  }
-
+class Wechat extends Middleware {
   constructor (config) {
     super()
-    const {prefix = '/tmp/wechat'} = config || {}
-    
-    // create api
-    this.api = new WeChatApi(prefix)
 
-    // middlewares
-    this.middlewares = []
+    const {
+      root_path = '/tmp/wechat'
+    } = config || {}
 
-    // contacts
-    this.contacts = null
+    this.api = new WechatAPI(root_path)
 
-    // history
-    this.history = null
-
-    // stop signal
-    this.stop_singal = false
-    this.is_running = false
-    this.stop_cb = null
+    this.tmp = {}
   }
 
-  use (middleware) {
-    this.middlewares.push(middleware)
-    return this
+  _startSyncCheck_ () {
+    const api = this.api
+    this.tmp.sync_interval = setInterval(async () => {
+      const {retcode, selector} = await api.synccheck()
+      if (retcode !== 0) {
+        const ok = await this.tryRelogin()
+      }
+
+      if (selector !== 0) {
+        const result = await api.webwxsync()
+        this.handle({ messages: result, contacts: api.contacts, api })
+      }
+    }, 24e3)
+  }
+
+  _stopSyncCheck_ () {
+    clearInterval(this.tmp.sync_interval)
+  }
+
+  async _waitForLogin_ (uuid) {
+    let tip = 1
+    while (true) {
+      const {code, redirect_uri} = await this.api.logincheck(uuid, tip)
+      if (code === 201) {
+        this.emit('login-confirm')
+        tip = 0
+      } else if (code === 408) {
+        continue
+      } else if (code === 200) {
+        return redirect_uri
+      } else {
+        throw new Error('等待登录错误')
+      }
+    }
+  }
+
+  async tryRelogin() {
+    try {
+      await this.api.webwxinit()
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
+  async login () {
+    const api = this.api
+    const uin = api.tickets.uin
+
+    const push_result = await api.webwxpushloginurl()
+    if (push_result.ret === '0') {
+      const uuid = push_result.uuid
+      this.emit('login-confirm')
+      const redirect_uri = await this._waitForLogin_(uuid)
+      await this.api.login(redirect_uri)
+    } else {
+      const { code, uuid } = await api.jslogin()
+      if (code !== 200)
+        throw new Error('获取 UUID 失败')
+      const qrcode_url = api.qrcode_img(uuid)
+      const qrcode = await api.qrcode(uuid)
+      this.emit('login-qrcode', { qrcode, qrcode_url })
+      const redirect_uri = await this._waitForLogin_(uuid)
+      await this.api.login(redirect_uri)
+    }
+    await this.api.webwxinit()
   }
 
   async start () {
-    if (this.is_running) {
-      throw new Error('WeChat is already running')
-    } else {
-      this.is_running = true
-      this.stop_singal = false
-    }
-
-    // make handler
-    const handler = WeChat.compose(this.middlewares)
-
     const api = this.api
     await api.init()
+    const lastsync = await api.restore()
 
-    let user
-    try {
-      if (!api.pass_ticket) {
-        throw new Error()
-      } else {
-        user = await api.webwxinit()
-      }
-    } catch (e) {
-      await api.getUUID()
+    const ok = (new Date() - lastsync < 60e3) && (await this.tryRelogin())
 
-      const qrcode = await api.genQrcode()
-      this.emit(qrcode, qrcode)
-
-      await api.waitForLogin()
-      await api.login()
-      user = await api.webwxinit()
+    if (!ok) {
+      await this.login()
     }
 
-    await api.webwxstatusnotify()
+    await this.api.webwxstatusnotify()
+    await this.api.webwxgetcontact()
 
-    while (!this.stop_singal) {
-      const result = await api.synccheck()
-
-      if (result.retcode !== 0) {
-        if (result.retcode === 1100) {
-          throw (new Error('已登出'))
-        } else if (result.retcode === 1101) {
-          throw (new Error('在其他地方登录'))
-        } else {
-          throw (new Error('未知错误: ' + result.retcode))
-        }
-      } 
-
-      if (result.selector !== 0) {
-        const result = await api.webwxsync()
-        for (let msg of [...result.AddMsgList]) {
-          handler({msg, user, api})
-        }
-      }
-
-      await utils.sleep(3)
-    }
-
-    this.stop_cb ? this.stop_cb() : void(0)
-    this.is_running = false
-    this.stop_singal = false
-    this.stop_cb = null
+    this._startSyncCheck_()
   }
 
-  async stop() {
-    if (!this.is_running || this.stop_singal === true) {
-      throw new Error('WeChat not running')
-    }
-    this.stop_singal = true
-    await new Promise(resolve => {
-      this.stop_cb = resolve
-    })
+  async stop () {
+    this._stopSyncCheck_()
   }
+}
 
-} 
-
-module.exports = WeChat
+module.exports = Wechat
